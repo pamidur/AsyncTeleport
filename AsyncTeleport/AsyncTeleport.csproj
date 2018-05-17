@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
-    <Description>Your teleport fron Sync to Async world. Make your app async from the very Main !</Description>
+    <Description>Teleport from Sync to Async world. Make your app async from the very Main !</Description>
     <PackageTags>async main teleport</PackageTags>
     <Copyright>AsyncTeleport Contributors - MIT License</Copyright>
     <PackageProjectUrl>https://github.com/pamidur/AsyncTeleport</PackageProjectUrl>
