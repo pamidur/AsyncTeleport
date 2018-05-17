@@ -52,9 +52,9 @@ namespace System
             var term = _exitTcs.Task;
 
             if (react != null)
-                term = term.ContinueWith(t => { react(); return t.Result; });
+                term = term.ContinueWith(t => { react(); return true; });
 
-            teleport.AddTerminator(ct => _exitTcs.Task);
+            teleport.AddTerminator(ct => term);
             return teleport;
         }
 
