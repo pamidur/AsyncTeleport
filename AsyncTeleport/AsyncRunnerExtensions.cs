@@ -15,29 +15,49 @@ namespace System
             AssemblyLoadContext.Default.Unloading += c => _exitTcs.SetResult(true);
         }
 
-        public static AsyncTeleport CancelOn(this AsyncTeleport runner, Action method)
+        /// <summary>
+        /// Add sync method to terminators. Cancellation token will be triggered when the method exits.
+        /// </summary>
+        /// <param name="teleport">Existing teleport</param>
+        /// <param name="method">Method to wait until cancel</param>
+        public static AsyncTeleport CancelOn(this AsyncTeleport teleport, Action method)
         {
-            runner.AddTerminator(ct => Task.Run(method, ct));
-            return runner;
+            teleport.AddTerminator(ct => Task.Run(method, ct));
+            return teleport;
         }
 
-        public static AsyncTeleport CancelOn(this AsyncTeleport runner, Func<CancellationToken, Task> task)
+        /// <summary>
+        /// Add async task to terminators. Cancellation token will be triggered when the task exits.
+        /// </summary>
+        /// <param name="teleport">Existing teleport</param>
+        /// <param name="task">Task to wait until cancel</param>
+        public static AsyncTeleport CancelOn(this AsyncTeleport teleport, Func<CancellationToken, Task> task)
         {
-            runner.AddTerminator(task);
-            return runner;
+            teleport.AddTerminator(task);
+            return teleport;
         }
 
-        public static AsyncTeleport CancelOnSigTerm(this AsyncTeleport runner, Action react = null)
+        /// <summary>
+        /// Add SigTerm monitor to terminators. Cancellation token will be triggered when the process receives exit signal.
+        /// </summary>
+        /// <param name="teleport">Existing teleport</param>
+        /// <param name="react">Method to ecexute before SigTerm is passed further</param>
+        public static AsyncTeleport CancelOnSigTerm(this AsyncTeleport teleport, Action react = null)
         {
             var term = _exitTcs.Task;
 
             if (react != null)
                 term = term.ContinueWith(t => { react(); return t.Result; });
 
-            runner.AddTerminator(ct => _exitTcs.Task);
-            return runner;
+            teleport.AddTerminator(ct => _exitTcs.Task);
+            return teleport;
         }
 
+        /// <summary>
+        /// Creates a task that wait for cancellation.
+        /// </summary>
+        /// <param name="ct">existing CancellationToken</param>
+        /// <returns>a task</returns>
         [DebuggerHidden]
         [DebuggerStepThrough]
         public static async Task Wait(this CancellationToken ct)
@@ -50,61 +70,90 @@ namespace System
                 catch (TaskCanceledException) { }
         }
 
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with cancellation token and return value</param>
         [DebuggerHidden]
         [DebuggerStepThrough]
-        public static T Run<T>(this AsyncTeleport runner, Func<CancellationToken, Task<T>> task)
+        public static T Run<T>(this AsyncTeleport teleport, Func<CancellationToken, Task<T>> task)
         {
-            return ExecuteSync(runner, task);
+            return ExecuteSync(teleport, task);
+        }
+
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with argument, cancellation token and return value</param>
+        /// <param name="a1">Task's first argument.</param>
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        public static T Run<T, TA1>(this AsyncTeleport teleport, Func<TA1, CancellationToken, Task<T>> task, TA1 a1)
+        {
+            return ExecuteSync(teleport, ct => task(a1, ct));
+        }
+
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with two arguments, cancellation token and return value</param>
+        /// <param name="a1">Task's first argument.</param>
+        /// <param name="a2">Task's second argument.</param>
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        public static T Run<T, TA1, TA2>(this AsyncTeleport teleport, Func<TA1, TA2, CancellationToken, Task<T>> task, TA1 a1, TA2 a2)
+        {
+            return ExecuteSync(teleport, ct => task(a1, a2, ct));
+        }
+
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with cancellation token</param>
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        public static void Run(this AsyncTeleport teleport, Func<CancellationToken, Task> task)
+        {
+            ExecuteSync(teleport, task);
+        }
+
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with argument, cancellation token</param>
+        /// <param name="a1">Task's first argument.</param>
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        public static void Run<TA1>(this AsyncTeleport teleport, Func<TA1, CancellationToken, Task> task, TA1 a1)
+        {
+            ExecuteSync(teleport, ct => task(a1, ct));
+        }
+
+        /// <summary>
+        /// Run async Task and wait for it to finish.
+        /// </summary>
+        /// <param name="task">Task with two arguments, cancellation token</param>
+        /// <param name="a1">Task's first argument.</param>
+        /// <param name="a2">Task's second argument.</param>
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        public static void Run<TA1, TA2>(this AsyncTeleport teleport, Func<TA1, TA2, CancellationToken, Task> task, TA1 a1, TA2 a2)
+        {
+            ExecuteSync(teleport, ct => task(a1, a2, ct));
         }
 
         [DebuggerHidden]
         [DebuggerStepThrough]
-        public static T Run<T, TA1>(this AsyncTeleport runner, Func<TA1, CancellationToken, Task<T>> task, TA1 a1)
+        private static T ExecuteSync<T>(AsyncTeleport teleport, Func<CancellationToken, Task<T>> task)
         {
-            return ExecuteSync(runner, ct => task(a1, ct));
+            return teleport.Execute(task).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         [DebuggerHidden]
         [DebuggerStepThrough]
-        public static T Run<T, TA1, TA2>(this AsyncTeleport runner, Func<TA1, TA2, CancellationToken, Task<T>> task, TA1 a1, TA2 a2)
+        private static void ExecuteSync(AsyncTeleport teleport, Func<CancellationToken, Task> task)
         {
-            return ExecuteSync(runner, ct => task(a1, a2, ct));
-        }
-
-
-        [DebuggerHidden]
-        [DebuggerStepThrough]
-        public static void Run(this AsyncTeleport runner, Func<CancellationToken, Task> task)
-        {
-            ExecuteSync(runner, task);
-        }
-
-        [DebuggerHidden]
-        [DebuggerStepThrough]
-        public static void Run<TA1>(this AsyncTeleport runner, Func<TA1, CancellationToken, Task> task, TA1 a1)
-        {
-            ExecuteSync(runner, ct => task(a1, ct));
-        }
-
-        [DebuggerHidden]
-        [DebuggerStepThrough]
-        public static void Run<TA1, TA2>(this AsyncTeleport runner, Func<TA1, TA2, CancellationToken, Task> task, TA1 a1, TA2 a2)
-        {
-            ExecuteSync(runner, ct => task(a1, a2, ct));
-        }
-
-        [DebuggerHidden]
-        [DebuggerStepThrough]
-        private static T ExecuteSync<T>(AsyncTeleport runner, Func<CancellationToken, Task<T>> task)
-        {
-            return runner.Execute(task).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        [DebuggerHidden]
-        [DebuggerStepThrough]
-        private static void ExecuteSync(AsyncTeleport runner, Func<CancellationToken, Task> task)
-        {
-            runner.Execute(task).ConfigureAwait(false).GetAwaiter().GetResult();
+            teleport.Execute(task).ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 }

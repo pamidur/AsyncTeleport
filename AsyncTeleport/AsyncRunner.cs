@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace System
 {
+    /// <summary>
+    /// Teleport from Sync to Async world!
+    /// </summary>
     public class AsyncTeleport
     {
         private readonly List<Func<CancellationToken, Task>> _waitList = new List<Func<CancellationToken, Task>>();
@@ -66,6 +69,10 @@ namespace System
             cts.Cancel();
         }
 
+        /// <summary>
+        /// Creates new teleport. Your starting point to use it!
+        /// </summary>
+        /// <returns>New Teleport</returns>
         public static AsyncTeleport New()
         {
             return new AsyncTeleport();

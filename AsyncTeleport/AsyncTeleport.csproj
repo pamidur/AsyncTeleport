@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
-    <Description>Your teleport fron Sync t o Async world. Make your app async from the very Main !.</Description>
+    <Description>Your teleport fron Sync to Async world. Make your app async from the very Main !</Description>
     <PackageTags>async main teleport</PackageTags>
     <Copyright>AsyncTeleport Contributors - MIT License</Copyright>
     <PackageProjectUrl>https://github.com/pamidur/AsyncTeleport</PackageProjectUrl>
@@ -10,6 +10,10 @@
     <RepositoryUrl>https://github.com/pamidur/AsyncTeleport</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Authors>Oleksandr Hulyi</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.0|AnyCPU'">
+    <DocumentationFile>bin\Release\netcoreapp2.0\AsyncTeleport.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
