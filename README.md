@@ -1,7 +1,7 @@
 # Async Teleport
 
-Teleports you from Sync to Async world. This lib is designed to your apps async from the very Main method.
-You can specify terminaators such as key press or SigTerm (usefu lfor services on aws etc.)
+Teleports you from Sync to Async world. This lib is designed to make your apps async from the very Main method.
+You can specify terminators such as _key press_ or _SigTerm_ (useful for services on aws etc.)
 
 ## Project Status
 [![Build Status](https://travis-ci.org/pamidur/AsyncTeleport.svg?branch=master)](https://travis-ci.org/pamidur/AsyncTeleport)
@@ -16,18 +16,18 @@ dotnet add package AsyncTeleport
 
 #### Use
 ```csharp
-static async Task MainAsync(string[] args, CancellationToken ct)
-{
-    await new Program().Run();
-    await ct.Wait();
-}
-
 static void Main(string[] args)
 {
     AsyncTeleport.New()
         .CancelOn(PressKey)
         .CancelOnSigTerm(OnSigTerm)
         .Run(MainAsync, args);
+}
+
+static async Task MainAsync(string[] args, CancellationToken ct)
+{
+    await new Program().Run();
+    await ct.Wait();
 }
 
 private static void OnSigTerm()
