@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+#if NETCOREAPP2_0
 using System.Runtime.Loader;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +14,10 @@ namespace System
         static AsyncTeleportExtensions()
         {
             _exitTcs = new TaskCompletionSource<bool>();
+#if NETCOREAPP2_0
             AssemblyLoadContext.Default.Unloading += c => _exitTcs.SetResult(true);
+#endif
+            Console.CancelKeyPress += (s, o) => _exitTcs.SetResult(true);
         }
 
         /// <summary>
@@ -38,11 +43,11 @@ namespace System
         }
 
         /// <summary>
-        /// Add SigTerm monitor to terminators. Cancellation token will be triggered when the process receives exit signal.
+        /// Add graceful shutdown monitor to terminators. Cancellation token will be triggered when the process receives exit graceful signal.
         /// </summary>
         /// <param name="teleport">Existing teleport</param>
-        /// <param name="react">Method to ecexute before SigTerm is passed further</param>
-        public static AsyncTeleport CancelOnSigTerm(this AsyncTeleport teleport, Action react = null)
+        /// <param name="react">Method to ecexute before SigTerm or CTRL+C is passed further</param>
+        public static AsyncTeleport CancelOnGracefulShutdown(this AsyncTeleport teleport, Action react = null)
         {
             var term = _exitTcs.Task;
 
