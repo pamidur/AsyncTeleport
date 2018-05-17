@@ -3,7 +3,7 @@ mono: latest
 dotnet: 2.0.0
 env:
   global:
-    - FrameworkPathOverride=$(dirname $(which mono))/../lib/mono/4.5/
+    - FrameworkPathOverride="$(dirname $(which mono))/../lib/mono/4.5/"
     - NUGETURL=https://api.nuget.org/v3/index.json
     - VERSION=${TRAVIS_TAG:-0.0.0-dev}
     - MODE=Release
