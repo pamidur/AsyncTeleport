@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <Description>Your teleport fron Sync t o Async world. Make your app async from the very Main !.</Description>
+    <PackageTags>async main teleport</PackageTags>
+    <Copyright>Oleksandr Hulyi</Copyright>
+    <PackageProjectUrl>https://github.com/pamidur/AsyncTeleport</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/pamidur/AsyncTeleport/blob/master/LICENSE.md</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/pamidur/AsyncTeleport</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>
